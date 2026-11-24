@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: complaint_db
+      MARIADB_USER: django_user
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./complaint_db.sql:/docker-entrypoint-initdb.d/complaint_db.sql:ro
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DB_NAME: complaint_db
+      DB_USER: django_user
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: "3306"
+      ALLOWED_HOSTS: "*"
+    depends_on:
+      - db
+
+volumes:
+  mariadb_data:
